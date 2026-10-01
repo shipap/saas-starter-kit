@@ -1,6 +1,6 @@
 # Security review
 
-This starter is evaluated as a local demonstration with a production-oriented boundary. Public deployment needs its own environment and integration review.
+This review covers the local starter and its single-instance public demonstration. It does not certify commercial deployments or unconfigured external providers.
 
 ## Required checks
 
@@ -33,7 +33,7 @@ Billing transitions, cancellation/reactivation, invalid signatures and duplicate
 
 Demo cookies were checked for HttpOnly protection, sandbox isolation, expiry and reset scoping. Foreign-Origin mutations were denied. SQL-looking project names remained data. Audit records omitted plaintext keys and invitation tokens. A 1,005-event regression verified that aggregate usage remains accurate when the recent-event list is capped.
 
-No publication or deployment was performed. No deployment credentials, private SSH files, real provider credentials or customer data were read or required. This local review does not replace production integration and operational validation.
+The public deployment uses PostgreSQL with no host port mapping, a non-root web container with no host port mapping, and a separately bounded Caddy gateway. Runtime secrets were generated on the server and stored in a mode-600 ignored environment file. The deployment-time Cloudflare token remained on the workstation. Private SSH key contents were not read or displayed. No real billing, OAuth or email credentials were configured.
 
 ## Public demo preparation
 
@@ -46,3 +46,11 @@ A single process admits at most 20 new sandboxes per minute and caps active sand
 Platform Admin Demo queries only the caller's sandbox and displays only that sandbox's session. Other visitors and real-account rows are excluded. Billing remains simulated and email remains in the isolated outbox.
 
 The public-mode integration suite covers authentication rejection, independent visitors, cross-sandbox IDs, isolated reset, private platform preview, invalid cookies, token-free outbox, stable reset limits, and expired-session cleanup while preserving active visitors. Production browser and database evidence is recorded separately after deployment.
+
+## Live verification
+
+The live two-context test verified foreign sandbox IDs fail, another visitor's reset is denied, mutations stay isolated and the Platform Admin Demo excludes other visitors. Forbidden Viewer, Member and Admin actions returned server denials. Valid keys worked, foreign-tenant use failed and revoked keys returned 401. Actual PostgreSQL rows were checked for hashed API keys and invitation tokens, with token-free outbox content.
+
+A targeted cleanup test expired only its own QA session in PostgreSQL. The periodic timer removed it and its sandbox while preserving a separately active visitor. Normal public authentication was disabled and the normal-account table remained empty. HTTPS cookies were checked for Secure and HttpOnly. Real browser accessibility and responsive results are in [the QA record](QA.md).
+
+The demonstration's application key prefix starts with `sk_demo_`; these are temporary keys for this application, not external-provider secrets. In-process rate limits and six-hour TTL bound a single demo instance but do not replace shared controls for a commercial distributed deployment.

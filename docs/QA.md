@@ -1,61 +1,83 @@
-# Local verification
+# Verification record
 
-This phase is local only. No GitHub publication, production deployment, real payment, external email delivery, or OAuth credential is required.
+Verified on October 1, 2026, from the independent publication checkout and the deployed application. Test configuration alone is not a passing result.
+
+## Clean local checkout
+
+| Check                                                            | Result                                                     |
+| ---------------------------------------------------------------- | ---------------------------------------------------------- |
+| Frozen dependency installation and peer compatibility            | PASS                                                       |
+| Billing provider unit tests                                      | 6 passed                                                   |
+| Database, HTTP, authentication and public-demo integration tests | 42 passed                                                  |
+| Full Vitest suite                                                | 48 passed                                                  |
+| ESLint, Prettier and TypeScript                                  | PASS                                                       |
+| Next.js production build                                         | PASS                                                       |
+| Chromium product suite                                           | 9 passed in the complete stable run                        |
+| Accessibility                                                    | 59 axe scans, zero violations under WCAG 2 A/AA and 2.1 AA |
+| Dependency audit                                                 | Zero reported known vulnerabilities                        |
+
+The local suite uses real PGlite SQL and request handlers. Billing is deliberately mocked; signature fixtures exercise the official Stripe SDK without network calls. Local screenshots remain available in `docs/images/local-*.png`.
+
+The first release-browser attempt encountered a connection refusal during a development-server restart after configuration editing. The complete suite passed after the server stabilized. No retry was needed in that final local run.
+
+## PostgreSQL-backed public deployment
+
+Live application: https://saas.rkn.fail
+
+| Check                                                    | Result                                                                                                   |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Constrained Linux Docker image build                     | PASS                                                                                                     |
+| Application and gateway Compose validation               | PASS                                                                                                     |
+| PostgreSQL 17 startup and additive schema initialization | PASS, 16 tables                                                                                          |
+| Application/container health                             | PASS                                                                                                     |
+| Public HTTPS health                                      | HTTP 200, publicly trusted Let's Encrypt certificate                                                     |
+| Live Chromium suite                                      | 10 passed, no retries                                                                                    |
+| Responsive coverage                                      | 1920x1080, 1440x900, 1024x768, 768x1024, 390x844                                                         |
+| Live accessibility                                       | 61 axe scans, zero violations under selected WCAG tags                                                   |
+| Two independent visitor contexts                         | PASS: separate mutations, foreign IDs rejected, isolated reset                                           |
+| Server RBAC                                              | Viewer project write, Member key creation and Admin billing denied                                       |
+| Mock billing                                             | Free/Pro/Business transitions, cancellation and reactivation passed                                      |
+| API keys                                                 | Creation, scoped request, foreign tenant denial and revoked-key rejection passed                         |
+| PostgreSQL key storage                                   | Positive row matched SHA-256 of the newly issued key; plaintext absent from lists                        |
+| Invitation storage                                       | Positive row contained a 64-character hash; outbox contained no bearer token                             |
+| Secure session cookie                                    | HttpOnly and Secure checked on HTTPS                                                                     |
+| Automatic cleanup                                        | A specifically expired QA sandbox was removed by the timer; an active second visitor remained accessible |
+| Hosted GitHub Actions                                    | Initial release and Compose-fix runs reported success                                                    |
+
+The live product suite covers landing, Overview, Projects, Team, Billing, API Keys, Audit, Settings, Dev outbox and sandboxed Platform Admin; project dialogs and focus restoration; invitation acceptance; theme persistence; search/filter; reset and keyboard navigation. The local-only screenshot-capture test was excluded to preserve the original local assets. Two additional public-mode tests verify sign-in hiding, Source attribution and independent visitor security, and capture genuine production images.
+
+Real production captures:
+
+- `docs/images/live-landing-1440.png`
+- `docs/images/live-dashboard-dark-1440.png`
+- `docs/images/live-dashboard-390.png`
+- `docs/images/social-preview.png` (1280x640 browser capture, not a fabricated composition)
+
+The lead inspected the desktop landing, dark dashboard, mobile dashboard and social-preview image. No horizontal overflow or browser JavaScript errors were found in the tested journeys.
+
+Compose initially rejected duplicate resource-limit fields. They were removed in a corrective source commit; both Compose configurations then validated and the deployment succeeded. No destructive migration or database reset was used.
 
 ## Reproduce
 
 ```sh
-pnpm install
-pnpm demo
-```
-
-Open http://localhost:3000 and choose **Try demo**. The browser receives its own sandbox session. Fixtures are fictional. Demo controls switch the effective workspace role and reset only that sandbox.
-
-```sh
+pnpm install --frozen-lockfile
 pnpm lint
 pnpm format:check
 pnpm typecheck
-pnpm test:unit
-pnpm test:integration
+pnpm test
+pnpm build
 pnpm exec playwright install chromium
 pnpm test:browser
-pnpm build
 ```
 
-Browser tests use a real Chromium browser against the actual application. They cover the entry page and all product views at 1920×1080, 1440×900, 1024×768, 768×1024, and 390×844. They check document overflow and every axe accessibility finding under WCAG 2 A/AA and 2.1 AA, and capture screenshots from the running product.
+The browser runner starts the local demonstration when necessary. Public checks mutate only their own temporary fictional sandboxes. Run the live checks against an already healthy deployment:
 
-Integration tests use fresh in-memory PGlite databases, actual SQL, request handlers, and Better Auth. They do not replace tenant authorization, billing transitions, invitation handling, or API key verification with mocks. The billing provider itself is intentionally local; its signature verification and Stripe SDK adapter are tested without network calls.
+```sh
+PUBLIC_QA=true BASE_URL=https://saas.rkn.fail pnpm exec playwright test --grep-invert "capture genuine local product screenshots"
+```
 
-## Evidence
-
-Local checks on October 1, 2026:
-
-| Check                                   | Result                                                 |
-| --------------------------------------- | ------------------------------------------------------ |
-| Billing provider unit tests             | 6 passed                                               |
-| Database/HTTP integration tests         | 37 passed in the lead's complete final run             |
-| Playwright Chromium product tests       | 9 passed, no retries                                   |
-| Axe accessibility scans                 | 59 scans, zero violations under the selected WCAG tags |
-| Browser JavaScript errors               | None in the tested journeys                            |
-| Five viewport overflow checks           | Passed for every product view and project dialog       |
-| Keyboard dialog close/focus restoration | Passed at all five viewport sizes                      |
-| QA files ESLint and formatting          | Passed                                                 |
-
-The browser journeys exercise actual project creation and server-backed Owner/Viewer restrictions; team invitation and development outbox acceptance; plan upgrade; one-time API key display and an authenticated API request; audit and team filtering; account updates; and isolated sandbox reset. Dark mode is checked across all eight product views.
-
-Visual QA found a dialog focus restoration defect, a development indicator overlapping screenshots, and theme initialization overwriting a saved dark preference on navigation. These were corrected. The dark-theme test asserts both the document theme and computed dark canvas color on every navigation and reload. Six screenshots show the actual product without the development indicator:
-
-- `docs/images/local-landing-1440.png`
-- `docs/images/local-dashboard-1440.png`
-- `docs/images/local-dashboard-390.png`
-- `docs/images/local-dashboard-dark-1440.png`
-- `docs/images/local-billing.png`
-- `docs/images/local-team.png`
-
-A configured test or CI workflow is not evidence that it passed. The lead independently ran all 43 Vitest tests (6 unit, 37 integration), workspace-wide ESLint, format validation and TypeScript checks successfully. The production build passed. Its standalone server passed actual health, demo session/bootstrap and Chromium project creation with all requested assets and no JavaScript errors. This caught and corrected PGlite's missing bundled runtime assets before delivery.
-
-`pnpm install --frozen-lockfile` and `pnpm peers check` passed. `pnpm audit --json` reported zero known vulnerabilities. CI YAML and Compose YAML parsed successfully with Prettier; hosted GitHub Actions did not run because this project was not published. Docker CLI/Engine are unavailable, so image builds, container startup and live PostgreSQL were not tested. Browser failure traces and reports are local ignored artifacts.
+On PowerShell, set these environment variables with `$env:PUBLIC_QA='true'` and `$env:BASE_URL='https://saas.rkn.fail'`, and use `pnpm.cmd` if script execution is restricted.
 
 ## Coverage boundaries
 
-PGlite exercises PostgreSQL SQL semantics locally. It does not demonstrate connection pooling, production PostgreSQL transport, multi-instance rate limiting, distributed cleanup, live billing, external email delivery, or configured OAuth provider behavior. Those require a separate deployment phase and real integration credentials.
+No live OAuth, SMTP, payment, or external business API credentials were used. Mock/provider fixtures do not prove those integrations work with real accounts. The single-instance demonstration does not establish high-load capacity, multi-instance rate limiting, distributed cleanup, disaster recovery or PostgreSQL failover. Hosted CI results should be checked for each subsequent commit.

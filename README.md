@@ -6,6 +6,14 @@ The starter demonstrates those foundations through **Relay**, a fictional B2B wo
 
 Relay and its seeded people, organizations and activity are fictional. Billing is simulated and email stays in a development outbox; no real payments or messages are sent.
 
+## Live Demo
+
+Try it without installing anything: **https://saas.rkn.fail**.
+
+No account required. Each visitor receives an isolated demo sandbox with fictional data. Demo data expires after six hours; reset affects only your sandbox. Normal sign-up is disabled on the public demonstration.
+
+[Try the live demo →](https://saas.rkn.fail)
+
 ## Local demo
 
 Requires Node.js 24 LTS and pnpm 12.8.1. From this directory:
@@ -38,12 +46,20 @@ Billing is simulated and invitations stay in the guarded development outbox. Dem
 
 ## Screenshots
 
-Real screenshots from the local application:
+Real screenshots from the PostgreSQL-backed public demonstration:
 
-![Relay workspace overview](docs/images/local-dashboard-1440.png)
+![Relay workspace overview in dark mode](docs/images/live-dashboard-dark-1440.png)
 
 <details>
-<summary>Landing, mobile, billing and team views</summary>
+<summary>Live landing and mobile overview</summary>
+
+![Public demo entry](docs/images/live-landing-1440.png)
+![Live mobile workspace](docs/images/live-dashboard-390.png)
+
+</details>
+
+<details>
+<summary>Additional local screenshots: landing, themes, billing and team</summary>
 
 ![Demo entry](docs/images/local-landing-1440.png)
 ![Mobile workspace](docs/images/local-dashboard-390.png)
@@ -91,13 +107,13 @@ Workspace Admin is not Platform Admin. Hiding or disabling controls is only pres
 
 All organization-scoped reads and mutations require authenticated membership. A resource ID or organization ID supplied by a client is never sufficient authorization. API keys derive their tenant from their stored record. Demo session IDs and workspace IDs are separate; each sandbox contains its own seeded workspaces.
 
-PGlite runs PostgreSQL in-process for Docker-free local development. It is not a fake in-memory business store. The production driver uses PostgreSQL through `pg`; the schema and data contracts stay the same. PGlite is a single-process development database, not a production multi-worker replacement. The same initial schema is applied through both drivers. Validate PostgreSQL connectivity and migrations in the target environment before deployment.
+PGlite runs PostgreSQL in-process for Docker-free local development. It is not a fake in-memory business store. The production driver uses PostgreSQL through `pg`; the schema and data contracts stay the same. PGlite is a single-process development database, not a production multi-worker replacement. The same additive initial schema is applied through both drivers. The public demo runs PostgreSQL 17 in a private container; its initialization and live application requests were verified.
 
 ## Billing, invitations and API keys
 
 Mock billing allows safe plan changes, cancellation and reactivation without money. Provider webhooks verify signatures and deduplicate stored event IDs before state transitions. The official Stripe SDK adapter verifies subscription-event fixtures; it is injected through `createPlatform({ billingProvider })`, not activated by an environment switch. Production checkout, price/customer mapping and handling out-of-order provider events still need integration. Live Stripe calls were not tested.
 
-Invitation tokens and API keys are cryptographically random and hashed before storage. Tokens expire and can be used once. Plaintext API keys are shown only when created. The development outbox intentionally represents email delivery, including invitation links; it is not an audit log or a production email service.
+Invitation tokens and API keys are cryptographically random and hashed before storage. Tokens expire and can be used once. Plaintext API keys are shown only when created. Demo outbox messages contain a non-secret workspace link and invitation ID; acceptance stays inside your sandbox. Normal invitations deliver their bearer token only through a configured email provider. The outbox is not an audit log or a production email service.
 
 For the example API, create a key with project-read scope in the UI:
 
@@ -136,11 +152,11 @@ Treat membership, RBAC, key scopes, invitation recipient identity, webhook verif
 
 For a commercial deployment, configure HTTPS, durable secrets, verified email delivery, required providers, backups/restore drills, monitoring and retention policies. Distributed deployments require shared rate limiting and production database tests. Review the documented demo TTL and cleanup behavior before exposing public sandboxes. Mock billing is not a completed live payment integration.
 
-Docker/Compose files provide a PostgreSQL-backed deployment architecture. Generate independent random `POSTGRES_PASSWORD` and `BETTER_AUTH_SECRET`, set the exact HTTPS `APP_URL`, and validate the image/Compose stack in the target environment. No Docker/container success is claimed unless recorded in QA. Never remove persistent volumes during upgrades.
+Docker/Compose files provide a PostgreSQL-backed deployment architecture. Generate independent random `POSTGRES_PASSWORD` and `BETTER_AUTH_SECRET`, set the exact HTTPS `APP_URL`, and validate the image/Compose stack in the target environment. The public-demo image, private PostgreSQL service and HTTPS gateway were built and exercised; evidence is in the [QA record](docs/QA.md). See [deployment notes](docs/DEPLOYMENT.md) for resource limits, six-hour sandbox cleanup and safe operation. Never remove persistent volumes during upgrades.
 
 ## Limitations
 
-This is a reusable product foundation, not a finished industry-specific SaaS. It includes one resource type, not a full project management suite. Local email stays in the development outbox and billing uses mocks. Commercial plan entitlements are illustrative, not enforced quotas. Rate limiting is per process and needs a shared store for multiple instances. Ownership transfer, provider checkout, external email delivery and versioned schema upgrades remain extension points. Live OAuth, email, Stripe and production PostgreSQL need separate integration tests. The public demonstration uses isolated temporary sandboxes, mock billing and the development outbox; it is not a production customer service.
+This is a reusable product foundation, not a finished industry-specific SaaS. It includes one resource type, not a full project management suite. Email stays in the development outbox and billing uses mocks. Commercial plan entitlements are illustrative, not enforced quotas. Rate limiting is per process and needs a shared store for multiple instances. Ownership transfer, provider checkout, external email delivery and versioned schema upgrades remain extension points. Live OAuth, email and Stripe were not tested. PostgreSQL was tested on the public demonstration, without high-load or failover testing. The public demonstration uses isolated temporary sandboxes; it is not a production customer service.
 
 ## Author & Custom Development
 

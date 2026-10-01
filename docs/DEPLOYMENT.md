@@ -1,6 +1,6 @@
 # Public demo deployment
 
-This directory contains deployment templates. Their presence does not mean a server or live demo has been deployed.
+These templates were exercised for the single-instance public demonstration at https://saas.rkn.fail. Other installations require their own safety and capacity review. Only this hostname is configured.
 
 ## Layout
 
@@ -59,3 +59,9 @@ Do not run `docker compose down -v`: it deletes application data. Back up Postgr
 In-process rate limiting assumes a single application instance. Review a shared limiter before horizontal scaling. Container logs are bounded and must not contain request bodies, credentials or generated plaintext keys.
 
 The demo templates limit web memory to 384 MiB, PostgreSQL to 256 MiB and Caddy to 96 MiB. Reassess those budgets against measured usage before increasing concurrency. On a small shared server, avoid an unbounded build: use a separately constrained BuildKit builder or build on a suitable machine and deploy the resulting image. Runtime limits do not automatically constrain image compilation. Preserve unrelated applications, networks, volumes and firewall rules.
+
+## Verified public-demo topology
+
+The public demo uses PostgreSQL 17, a non-root Next.js service and Dockerized Caddy. The gateway exposes HTTP/HTTPS; application and database services have no host mappings. Cloudflare has a DNS-only A record for the demo hostname. No wildcard or future demo route is configured.
+
+Runtime memory budgets are 384 MiB for the web service, 256 MiB for PostgreSQL and 96 MiB for Caddy. A separate BuildKit container limited compilation to 768 MiB and half a CPU, with one worker; it was stopped after image delivery. The actual runtime footprint was checked after browser QA. A server build must respect the capacity of other resident services.
