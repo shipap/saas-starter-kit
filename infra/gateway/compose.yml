@@ -1,0 +1,39 @@
+name: rkn-demo-gateway
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: rkn-demo-caddy
+    restart: unless-stopped
+    mem_limit: 96m
+    cpus: 0.2
+    mem_limit: 96m
+    cpus: 0.25
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - gateway
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+networks:
+  gateway:
+    external: true
+    name: rkn-demo-net
+
+volumes:
+  caddy_data:
+    name: rkn-demo-caddy-data
+  caddy_config:
+    name: rkn-demo-caddy-config

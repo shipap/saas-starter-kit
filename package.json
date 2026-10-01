@@ -1,0 +1,62 @@
+{
+  "name": "saas-starter-kit",
+  "version": "0.1.0",
+  "private": true,
+  "author": "bububi",
+  "license": "MIT",
+  "homepage": "https://bububi.icu",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shipap/saas-starter-kit.git"
+  },
+  "packageManager": "pnpm@12.8.1",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "demo": "tsx scripts/demo.ts",
+    "dev": "pnpm --dir apps/web dev",
+    "build": "pnpm --dir apps/web build",
+    "start": "pnpm --dir apps/web start",
+    "lint": "eslint apps/web packages scripts tests",
+    "format": "prettier --write apps/web packages scripts tests docs infra README.md package.json pnpm-workspace.yaml tsconfig.json eslint.config.mjs playwright.config.ts vitest.config.ts .github docker-compose.yml",
+    "format:check": "prettier --check apps/web packages scripts tests docs infra README.md package.json pnpm-workspace.yaml tsconfig.json eslint.config.mjs playwright.config.ts vitest.config.ts .github docker-compose.yml",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:browser": "playwright test"
+  },
+  "dependencies": {
+    "next": "16.3.8",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "better-auth": "1.7.7",
+    "@electric-sql/pglite": "0.5.8",
+    "drizzle-orm": "0.45.3",
+    "pg": "^8.16.3",
+    "zod": "^4.1.0",
+    "stripe": "^20.0.0",
+    "lucide-react": "^0.577.0",
+    "@fontsource-variable/manrope": "^5.2.8",
+    "@fontsource-variable/dm-sans": "^5.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/pg": "^8.15.0",
+    "typescript": "6.0.3",
+    "tsx": "^4.20.0",
+    "vitest": "5.0.3",
+    "@playwright/test": "1.63.0",
+    "@axe-core/playwright": "^4.11.0",
+    "eslint": "10.11.0",
+    "prettier": "^3.8.0",
+    "@eslint/js": "10.0.1",
+    "typescript-eslint": "8.71.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "^17.0.0"
+  },
+  "type": "module"
+}

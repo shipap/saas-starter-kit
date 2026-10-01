@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "es2022"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@kit/shared/*": ["packages/shared/src/*"],
+      "@kit/db/*": ["packages/db/src/*"],
+      "@kit/auth/*": ["packages/auth/src/*"],
+      "@kit/billing/*": ["packages/billing/src/*"],
+      "@kit/email/*": ["packages/email/src/*"],
+      "@kit/platform/*": ["packages/platform/src/*"]
+    },
+    "ignoreDeprecations": "6.0"
+  },
+  "include": [
+    "apps/web/**/*.ts",
+    "apps/web/**/*.tsx",
+    "packages/**/*.ts",
+    "packages/**/*.tsx",
+    "scripts/**/*.ts",
+    "tests/**/*.ts",
+    "*.config.ts"
+  ],
+  "exclude": ["node_modules", "apps/web/.next"]
+}

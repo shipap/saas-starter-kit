@@ -1,0 +1,94 @@
+name: saas-starter-kit
+
+services:
+  web:
+    image: saas-starter-kit:public-demo
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: saas-web
+    restart: unless-stopped
+    mem_limit: 384m
+    cpus: 0.5
+    mem_limit: 384m
+    cpus: 0.75
+    environment:
+      NODE_ENV: production
+      DATABASE_DRIVER: postgres
+      DATABASE_URL: postgresql://saas:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/saas
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET}
+      APP_URL: https://saas.rkn.fail
+      DEMO_MODE: "true"
+      PUBLIC_DEMO: "true"
+      PUBLIC_PORTFOLIO_URL: https://bububi.icu
+      PUBLIC_CONTACT_EMAIL: work@bububi.icu
+      PUBLIC_TELEGRAM_URL: https://t.me/o3amfeels
+      PUBLIC_SOURCE_URL: https://github.com/shipap/saas-starter-kit
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - private
+      - gateway
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 10s
+      start_period: 45s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: saas-db
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: 0.3
+    mem_limit: 256m
+    cpus: 0.5
+    environment:
+      POSTGRES_DB: saas
+      POSTGRES_USER: saas
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - private
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U saas -d saas]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+networks:
+  private:
+    internal: true
+  gateway:
+    external: true
+    name: rkn-demo-net
+
+volumes:
+  postgres_data:
+    name: saas-starter-kit-postgres-data

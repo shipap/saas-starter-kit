@@ -1,0 +1,17 @@
+node_modules
+**/node_modules
+**/.next
+.data
+.qa
+.env
+.env.*
+**/.git
+test-results
+playwright-report
+docs/images
+.codex
+coverage
+*.log
+*.tsbuildinfo
+*.tar
+*.tar.gz

@@ -1,0 +1,17 @@
+node_modules/
+.next/
+.data/
+.qa/
+.env
+.env.*
+!.env.example
+playwright-report/
+test-results/
+coverage/
+*.log
+*.tsbuildinfo
+
+# Private deployment files and temporary release artifacts.
+.env.production
+*.tar
+*.tar.gz

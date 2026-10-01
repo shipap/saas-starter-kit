@@ -1,0 +1,24 @@
+export const migration = `
+CREATE TABLE IF NOT EXISTS auth_user (id text PRIMARY KEY,name text NOT NULL,email text NOT NULL UNIQUE,email_verified boolean NOT NULL DEFAULT false,image text,created_at timestamptz NOT NULL,updated_at timestamptz NOT NULL);
+CREATE TABLE IF NOT EXISTS auth_session (id text PRIMARY KEY,token text NOT NULL UNIQUE,expires_at timestamptz NOT NULL,created_at timestamptz NOT NULL,updated_at timestamptz NOT NULL,ip_address text,user_agent text,user_id text NOT NULL REFERENCES auth_user(id) ON DELETE CASCADE);
+CREATE TABLE IF NOT EXISTS auth_account (id text PRIMARY KEY,account_id text NOT NULL,provider_id text NOT NULL,user_id text NOT NULL REFERENCES auth_user(id) ON DELETE CASCADE,access_token text,refresh_token text,id_token text,access_token_expires_at timestamptz,refresh_token_expires_at timestamptz,scope text,password text,created_at timestamptz NOT NULL,updated_at timestamptz NOT NULL);
+CREATE TABLE IF NOT EXISTS auth_verification (id text PRIMARY KEY,identifier text NOT NULL,value text NOT NULL,expires_at timestamptz NOT NULL,created_at timestamptz,updated_at timestamptz);
+CREATE TABLE IF NOT EXISTS users (id text PRIMARY KEY,name text NOT NULL,email text NOT NULL,theme text NOT NULL DEFAULT 'system',sandbox_id text);
+CREATE TABLE IF NOT EXISTS demo_sessions (id text PRIMARY KEY,token_hash text NOT NULL UNIQUE,user_id text NOT NULL,role text NOT NULL DEFAULT 'OWNER',expires_at timestamptz NOT NULL,created_at timestamptz NOT NULL);
+CREATE TABLE IF NOT EXISTS organizations (id text PRIMARY KEY,name text NOT NULL,slug text NOT NULL,sandbox_id text,plan text NOT NULL DEFAULT 'FREE',billing_status text NOT NULL DEFAULT 'ACTIVE',cancel_at_period_end boolean NOT NULL DEFAULT false,current_period_end timestamptz NOT NULL,created_at timestamptz NOT NULL);
+CREATE UNIQUE INDEX IF NOT EXISTS organization_normal_slug ON organizations(slug) WHERE sandbox_id IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS organization_sandbox_slug ON organizations(sandbox_id,slug) WHERE sandbox_id IS NOT NULL;
+CREATE TABLE IF NOT EXISTS memberships (id text PRIMARY KEY,organization_id text NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE,role text NOT NULL CHECK(role IN ('OWNER','ADMIN','MEMBER','VIEWER')),UNIQUE(organization_id,user_id));
+CREATE TABLE IF NOT EXISTS projects (id text PRIMARY KEY,organization_id text NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,name text NOT NULL,description text NOT NULL,status text NOT NULL CHECK(status IN ('ACTIVE','PAUSED','ARCHIVED')),owner_id text REFERENCES users(id),created_at timestamptz NOT NULL);
+CREATE TABLE IF NOT EXISTS invitations (id text PRIMARY KEY,organization_id text NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,email text NOT NULL,role text NOT NULL CHECK(role IN ('ADMIN','MEMBER','VIEWER')),token_hash text NOT NULL UNIQUE,status text NOT NULL DEFAULT 'PENDING',expires_at timestamptz NOT NULL,created_at timestamptz NOT NULL);
+CREATE TABLE IF NOT EXISTS api_keys (id text PRIMARY KEY,organization_id text NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,name text NOT NULL,prefix text NOT NULL,last_four text NOT NULL,key_hash text NOT NULL UNIQUE,scopes jsonb NOT NULL,created_at timestamptz NOT NULL,last_used_at timestamptz,revoked_at timestamptz);
+CREATE TABLE IF NOT EXISTS usage_events (id text PRIMARY KEY,organization_id text NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,key_id text,path text NOT NULL,status integer NOT NULL,created_at timestamptz NOT NULL);
+CREATE TABLE IF NOT EXISTS audit_events (id text PRIMARY KEY,organization_id text NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,actor text NOT NULL,event text NOT NULL,target text NOT NULL,created_at timestamptz NOT NULL);
+CREATE TABLE IF NOT EXISTS dev_outbox (id text PRIMARY KEY,organization_id text NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,recipient text NOT NULL,subject text NOT NULL,body text NOT NULL,invitation_id text,created_at timestamptz NOT NULL);
+CREATE TABLE IF NOT EXISTS billing_events (id text PRIMARY KEY,organization_id text NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,provider text NOT NULL,created_at timestamptz NOT NULL);
+CREATE TABLE IF NOT EXISTS auth_outbox (id text PRIMARY KEY,user_id text NOT NULL,recipient text NOT NULL,subject text NOT NULL,body text NOT NULL,created_at timestamptz NOT NULL);
+CREATE INDEX IF NOT EXISTS projects_tenant ON projects(organization_id);
+CREATE INDEX IF NOT EXISTS audits_tenant_time ON audit_events(organization_id,created_at DESC);
+CREATE INDEX IF NOT EXISTS usage_tenant_time ON usage_events(organization_id,created_at DESC);
+CREATE INDEX IF NOT EXISTS invitations_tenant ON invitations(organization_id,email);
+`;

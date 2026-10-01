@@ -1,0 +1,1 @@
+Instruction-only copy from https://github.com/Hitbullets/codex-skills/tree/main/codex-frontend-design/skills/ui-ux-pro-max. Reviewed the complete SKILL.md and repository tree before copying. This skill references no executable scripts or assets. No third-party scripts were executed.

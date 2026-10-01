@@ -1,0 +1,8 @@
+node_modules
+.next
+apps/web/next-env.d.ts
+apps/web/.next
+pnpm-lock.yaml
+docs/images
+.codex
+WORK_PLAN.md
