@@ -10,8 +10,6 @@ services:
     restart: unless-stopped
     mem_limit: 384m
     cpus: 0.5
-    mem_limit: 384m
-    cpus: 0.75
     environment:
       NODE_ENV: production
       DATABASE_DRIVER: postgres
@@ -59,8 +57,6 @@ services:
     restart: unless-stopped
     mem_limit: 256m
     cpus: 0.3
-    mem_limit: 256m
-    cpus: 0.5
     environment:
       POSTGRES_DB: saas
       POSTGRES_USER: saas

@@ -7,8 +7,6 @@ services:
     restart: unless-stopped
     mem_limit: 96m
     cpus: 0.2
-    mem_limit: 96m
-    cpus: 0.25
     ports:
       - "80:80"
       - "443:443"
